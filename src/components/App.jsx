@@ -29,9 +29,19 @@ class App extends Component {
       return;
     }
 
+    if (isNaN(number)) {
+      Notify.failure('Please enter a valid number.');
+      return;
+    }
+
+    if (/\d/.test(name)) {
+      Notify.failure('Name should not contain numbers.');
+      return;
+    }
+
     const formData = {
       name,
-      number,
+      number: Number(number),
       id: nanoid()
     };
 
@@ -47,6 +57,7 @@ class App extends Component {
       alert(`Profile with name ${formData.name} already exists!`);
       return;
     }
+
 
     const finalProfile = {
       ...formData,
