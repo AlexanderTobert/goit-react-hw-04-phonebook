@@ -81,12 +81,24 @@ class App extends Component {
     }));
   };
 
+  handleInputChange = (event) => {
+  const { name, value } = event.target;
+
+  this.setState((prevState) => ({
+      [name]: value,
+  }));
+};
+
   render() {
     return (
       <section className={css.sectionItem}>
         <h2 style={{fontSize: '2em', fontWeight: 700,
     marginBottom: '10px',}}>Phone number</h2>
-        <ContactForm handleSubmit={this.handleFormSubmit} />
+        <ContactForm
+          handleSubmit={this.handleFormSubmit}
+          formData={{ name: this.state.name, number: this.state.number }}
+          handleInputChange={this.handleInputChange}
+        />
 
         <h2 style={{fontSize: '2em', fontWeight: 700,
     marginBottom: '10px',}}>Contacts</h2>
