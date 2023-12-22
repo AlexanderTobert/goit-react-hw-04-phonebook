@@ -7,35 +7,44 @@ import { Notify } from 'notiflix';
 import css from './maim.module.css'
 class App extends Component {
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
+    contacts: [],
     filter: '',
   };
 
-handleAddProfile = formData => {
-  const hasDuplicates = this.state.contacts.some(
-    profile => profile.name === formData.name
-  );
-
-  if (hasDuplicates) {
-    Notify.alert(`Profile with name ${formData.name} already exists!`);
-    return;
+  componentDidMount() {
+    const stringifiedContacts = localStorage.getItem('contacts');
+    const contacts = JSON.parse(stringifiedContacts) ?? [];
+    this.setState({ contacts });
   }
 
-  const finalProfile = {
-    ...formData,
-    id: nanoid(),
-  };
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.contacts !== this.state.contacts)
+    {
+      const stringifiedContacts = JSON.stringify(this.state.contacts);
+      localStorage.setItem('contacts', stringifiedContacts);
+    }
+  }
 
-  this.setState(prevState => {
-    return {
-      contacts: [...prevState.contacts, finalProfile],
+  handleAddProfile = formData => {
+    const hasDuplicates = this.state.contacts.some(
+      profile => profile.name === formData.name
+    );
+
+    if (hasDuplicates) {
+      Notify.alert(`Profile with name ${formData.name} already exists!`);
+      return;
+    }
+
+    const finalProfile = {
+      ...formData,
+      id: nanoid(),
     };
-  });
+
+    this.setState(prevState => {
+      return {
+        contacts: [...prevState.contacts, finalProfile],
+      };
+    });
 };
 
   handleChangeFilter = event => {
@@ -64,7 +73,7 @@ handleAddProfile = formData => {
         <h2 style={{fontSize: '2em', fontWeight: 700,
     marginBottom: '10px',}}>Contacts</h2>
 
-        <Filter handleChangeFilter={this.handleChangeFilter}/>
+        <Filter filter={this.state.filter} handleChangeFilter={this.handleChangeFilter}/>
         <ContactList state={this.state} handleContactDelete={this.handleContactDelete} />
       </section>
     );
