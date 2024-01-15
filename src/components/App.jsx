@@ -1,32 +1,28 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { nanoid } from 'nanoid';
 import { ContactForm } from "./ContactForm/ContactForm";
 import { Filter } from "./Filter/Filter";
 import { ContactList } from "./ContactList/ContactList";
 import { Notify } from 'notiflix';
-import css from './maim.module.css'
-class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+import css from './maim.module.css';
 
-  componentDidMount() {
+const App = () => {
+
+  const [filter, setFilter] = useState('');
+
+  const [contacts, setContacts] = useState(() => {
     const stringifiedContacts = localStorage.getItem('contacts');
-    const contacts = JSON.parse(stringifiedContacts) ?? [];
-    this.setState({ contacts });
-  }
+    const storedContacts = JSON.parse(stringifiedContacts) || [];
+    return storedContacts;
+  });
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.contacts !== this.state.contacts)
-    {
-      const stringifiedContacts = JSON.stringify(this.state.contacts);
-      localStorage.setItem('contacts', stringifiedContacts);
-    }
-  }
+  useEffect(() => {
+    const stringifiedContacts = JSON.stringify(contacts);
+    localStorage.setItem('contacts', stringifiedContacts);
+  }, [contacts]);
 
-  handleAddProfile = formData => {
-    const hasDuplicates = this.state.contacts.some(
+  const handleAddProfile = formData => {
+    const hasDuplicates = contacts.some(
       profile => profile.name === formData.name
     );
 
@@ -40,44 +36,32 @@ class App extends Component {
       id: nanoid(),
     };
 
-    this.setState(prevState => {
-      return {
-        contacts: [...prevState.contacts, finalProfile],
-      };
-    });
-};
+    setContacts(prevContacts => [...prevContacts, finalProfile]);
+  };
 
-  handleChangeFilter = event => {
+  const handleChangeFilter = event => {
     const value = event.target.value;
-    this.setState({ filter: value });
+    setFilter(value);
   };
 
-  handleContactDelete = id => {
-    this.setState(({ contacts: prevContacts }) => ({
-      contacts: prevContacts.filter(contact => contact.id !== id),
-    }));
+  const handleContactDelete = id => {
+    setContacts(prevContacts => prevContacts.filter(contact => contact.id !== id));
   };
 
-  
+  return (
+    <section className={css.sectionItem}>
+      <h2 style={{ fontSize: '2em', fontWeight: 700, marginBottom: '10px' }}>Phone number</h2>
+      <ContactForm
+        handleAddProfile={handleAddProfile}
+        contacts={contacts}
+      />
 
-  render() {
-    return (
-      <section className={css.sectionItem}>
-        <h2 style={{fontSize: '2em', fontWeight: 700,
-    marginBottom: '10px',}}>Phone number</h2>
-        <ContactForm
-  handleAddProfile={this.handleAddProfile}
-  contacts={this.state.contacts}
-/>
+      <h2 style={{ fontSize: '2em', fontWeight: 700, marginBottom: '10px' }}>Contacts</h2>
 
-        <h2 style={{fontSize: '2em', fontWeight: 700,
-    marginBottom: '10px',}}>Contacts</h2>
-
-        <Filter filter={this.state.filter} handleChangeFilter={this.handleChangeFilter}/>
-        <ContactList state={this.state} handleContactDelete={this.handleContactDelete} />
-      </section>
-    );
-  }
-}
+      <Filter filter={filter} handleChangeFilter={handleChangeFilter} />
+      <ContactList state={{ contacts, filter }} handleContactDelete={handleContactDelete} />
+    </section>
+  );
+};
 
 export default App;
